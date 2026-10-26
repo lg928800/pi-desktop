@@ -9,6 +9,7 @@
 		"test": "vitest --run"
 	},
 	"dependencies": {
-		"@pi-desktop/shared": "*"
+		"@pi-desktop/shared": "*",
+		"ws": "^8.22.0"
 	}
 }

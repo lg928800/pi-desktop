@@ -38,8 +38,8 @@ export type ClientOp =
 	  }
 	| { id: string; op: "run.abort"; sessionId: string }
 	| { id: string; op: "approval.reply"; requestId: string; confirmed: boolean }
-	| { id: string; op: "model.list" }
-	| { id: string; op: "asset.get"; ref: string };
+	| { id: string; op: "model.list"; sessionId?: string }
+	| { id: string; op: "asset.get"; sessionId: string; ref: string };
 
 /** 应答：成功带 data，失败带 error；id 与请求一致 */
 export type ClientResponse =
