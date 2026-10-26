@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.tauri.app/config/2",
+	"productName": "pi-desktop",
+	"version": "0.1.0",
+	"identifier": "dev.zhuanz.pidesktop",
+	"build": {
+		"beforeDevCommand": "npm run -w @pi-desktop/ui dev",
+		"devUrl": "http://localhost:5173",
+		"beforeBuildCommand": "npm run -w @pi-desktop/ui build",
+		"frontendDist": "../src/ui/dist"
+	},
+	"app": {
+		"windows": [
+			{
+				"title": "pi-desktop",
+				"width": 1320,
+				"height": 860,
+				"minWidth": 960,
+				"minHeight": 640,
+				"titleBarStyle": "Overlay",
+				"hiddenTitle": true
+			}
+		],
+		"security": {
+			"csp": null
+		}
+	},
+	"bundle": {
+		"active": true,
+		"targets": "all",
+		"icon": ["icons/icon.png"]
+	}
+}

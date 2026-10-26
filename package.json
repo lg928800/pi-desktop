@@ -13,9 +13,13 @@
 	"scripts": {
 		"typecheck": "tsc --noEmit",
 		"test": "vitest --run",
-		"bridge:dev": "npm run -w @pi-desktop/bridge dev"
+		"bridge:dev": "npm run -w @pi-desktop/bridge dev",
+		"tauri": "tauri",
+		"dev": "tauri dev",
+		"build:app": "tauri build"
 	},
 	"devDependencies": {
+		"@tauri-apps/cli": "^2.12.4",
 		"@types/node": "^26.6.5",
 		"@types/ws": "^8.18.2",
 		"tsx": "^4.23.15",

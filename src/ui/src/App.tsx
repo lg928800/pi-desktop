@@ -48,7 +48,18 @@ export default function App() {
 	useEffect(() => {
 		const endpoint = resolveEndpoint();
 		if (endpoint) connect(endpoint);
-		return () => clientRef.current?.close();
+
+		// Tauri 启动 bridge 后会把 {url, token} 注入到 window 上并派发这个事件
+		const onReady = () => {
+			const injected = resolveEndpoint();
+			if (injected) connect(injected);
+		};
+		window.addEventListener("pi-desktop-ready", onReady);
+
+		return () => {
+			window.removeEventListener("pi-desktop-ready", onReady);
+			clientRef.current?.close();
+		};
 	}, []);
 
 	useEffect(() => {
