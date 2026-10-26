@@ -19,6 +19,9 @@
 - 2026-10-26 | 模型：右栏可点击切换（set_model），「＋ 配置」写 ~/.pi/agent/models.json（JSONC 保注释 + 备份），改完需重启会话
 - 2026-10-26 | 对话呈现：执行过程走终端流（默认运行中展开、结束折叠），最后一条助手消息单独标注「结果」
 
+- 2026-10-26 | 未完成事项统一归档在 `docs/ROADMAP.md`（P0 权限网关/附件语义/会话持久化，P1 落地与对账等）—— 开工前先读，别凭记忆
+- 2026-10-26 | 代码已推到 https://github.com/lg928800/pi-desktop（main，public）
+
 ## reference
 
 - pi 安装目录：`/Users/Zhuanz/.pi/agent/install/releases/1.4.0/node_modules/@earendil-works/pi-coding-agent`（升级后版本号会变）

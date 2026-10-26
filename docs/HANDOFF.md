@@ -27,10 +27,16 @@
 
 ## 下一步
 
+> 完整清单（含验收标准与量级）见 [`docs/ROADMAP.md`](ROADMAP.md)，这里只列顺序。
+
 1. **P3 权限网关**：`extensions/permission`，`tool_call` 钩子 + 四档策略 + 受保护路径 + fail-closed。当前是裸执行，别在真仓库里放危险指令。
 2. **会话持久化**：`sessionFile` 仍为 null，bridge 重启后点任务会新开会话（历史只在活会话里回放）。
 3. **P2 对账与落地**：git diff、三轨对账、commit 落地区。
 4. 打包：release 版仍在跑仓库里的 bridge（`npx tsx`），跨机分发需 `PI_DESKTOP_BRIDGE_CMD` + 随包二进制。
+
+### 未完成事项已归档
+
+2026-10-26：全部缺口与扩展路线写入 `docs/ROADMAP.md`（P0/P1/P2 分级 + 每条验收标准）。**新会话开工前先读它**，不要凭记忆判断"还差什么"。
 
 ## 注意事项
 

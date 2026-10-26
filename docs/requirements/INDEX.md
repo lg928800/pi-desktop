@@ -4,4 +4,6 @@
 | ---- | ---- | ---- | ---- | -------- |
 | pi-desktop MVP（pi 可视化桌面端） | ui / bridge / ext-* | P1 完成，P3 待开工 | docs/requirements/2026-10-26-pi-desktop-mvp | 2026-10-26 |
 
+未完成事项与扩展路线：见 `docs/ROADMAP.md`（不在本表跟踪）。
+
 状态取值：设计待拍板 / 计划中 / 开发中 / 待验收 / 已完成 / 已放弃

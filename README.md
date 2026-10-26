@@ -51,10 +51,16 @@ npm run e2e          # 真实模型端到端冒烟（会调用一次模型）
 
 首次 `npm run dev` 需要 Rust 工具链；bridge 走 `npx tsx` 跑 TS 源码。
 
+## 还差什么
+
+- [`docs/ROADMAP.md`](docs/ROADMAP.md)：未完成事项（含验收标准）、扩展路线、已知限制
+- 当前最重要的缺口：**权限网关未实现**（危险命令不会拦）与**会话重启失忆**
+
 ## 目录
 
 ```
 docs/
+  ROADMAP.md           未完成事项与扩展路线（开工前先读）
   requirements/        需求目录（requirement / design / tasks）
   HANDOFF.md           会话交接
   LESSONS.md           教训账本
