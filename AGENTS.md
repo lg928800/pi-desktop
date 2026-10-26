@@ -1,5 +1,8 @@
 # pi-desktop — pi 引擎的可视化桌面端
 
+> **接手/换模型时先读 [`docs/ONBOARDING.md`](docs/ONBOARDING.md)**：30 秒理解项目、5 分钟上手命令、已踩过的坑、验证纪律。
+> 还差什么看 [`docs/ROADMAP.md`](docs/ROADMAP.md)。
+
 ## 项目定位
 
 把 coding agent（pi）的终端体验搬进桌面：会话列表、流式消息、工具调用卡片、文件 diff、危险操作审批、多会话并行。

@@ -51,6 +51,10 @@ npm run e2e          # 真实模型端到端冒烟（会调用一次模型）
 
 首次 `npm run dev` 需要 Rust 工具链；bridge 走 `npx tsx` 跑 TS 源码。
 
+## 换模型接手 / 新人加入
+
+先读 [`docs/ONBOARDING.md`](docs/ONBOARDING.md)。
+
 ## 还差什么
 
 - [`docs/ROADMAP.md`](docs/ROADMAP.md)：未完成事项（含验收标准）、扩展路线、已知限制

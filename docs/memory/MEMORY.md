@@ -22,6 +22,9 @@
 - 2026-10-26 | 未完成事项统一归档在 `docs/ROADMAP.md`（P0 权限网关/附件语义/会话持久化，P1 落地与对账等）—— 开工前先读，别凭记忆
 - 2026-10-26 | 代码已推到 https://github.com/lg928800/pi-desktop（main，public）
 
+- 2026-10-26 | 换模型接手的入口是 `docs/ONBOARDING.md`（含上手命令、9 个已踩坑、验证纪律），AGENTS.md 顶部已强制指向
+- 2026-10-26 | 项目换模型时：`~/.pi/agent/models.json` 加 provider/模型，或 UI 右栏「＋ 配置」；新模型需支持 tool calling
+
 ## reference
 
 - pi 安装目录：`/Users/Zhuanz/.pi/agent/install/releases/1.4.0/node_modules/@earendil-works/pi-coding-agent`（升级后版本号会变）
