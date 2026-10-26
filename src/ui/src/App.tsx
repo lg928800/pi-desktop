@@ -7,6 +7,7 @@ import { Chat } from "./components/Chat.tsx";
 import { ProgressPanel } from "./components/ProgressPanel.tsx";
 import { ApprovalDialog } from "./components/ApprovalDialog.tsx";
 import { ConnectBar } from "./components/ConnectBar.tsx";
+import { CreateDialog, type CreateRequest } from "./components/CreateDialog.tsx";
 import { TitleBar } from "./components/TitleBar.tsx";
 
 const RIGHT_KEY = "pi-desktop.right-panel";
@@ -20,6 +21,7 @@ export default function App() {
 	const [error, setError] = useState<string | null>(null);
 	const [rightOpen, setRightOpen] = useState(() => localStorage.getItem(RIGHT_KEY) !== "closed");
 	const [connecting, setConnecting] = useState(false);
+	const [create, setCreate] = useState<CreateRequest | null>(null);
 	const clientRef = useRef<BridgeClient | null>(null);
 	const viewRef = useRef(view);
 	viewRef.current = view;
@@ -86,27 +88,17 @@ export default function App() {
 		}
 	}
 
-	async function createProject() {
-		const root = window.prompt("项目根目录（绝对路径）");
-		if (!root) return;
-		const name = window.prompt("项目名", root.split("/").filter(Boolean).at(-1) ?? "project");
-		if (!name) return;
-		await call({ op: "project.create", name, root });
+	async function submitCreate(values: { name: string; root?: string }) {
+		if (!create) return;
+		if (create.kind === "project") {
+			await call({ op: "project.create", name: values.name, root: values.root ?? values.name });
+		} else if (create.kind === "feature") {
+			await call({ op: "feature.create", projectId: create.parentId!, name: values.name });
+		} else {
+			await call({ op: "task.create", featureId: create.parentId!, title: values.name });
+		}
 		await refreshTree();
-	}
-
-	async function createFeature(projectId: string) {
-		const name = window.prompt("功能集名称");
-		if (!name) return;
-		await call({ op: "feature.create", projectId, name });
-		await refreshTree();
-	}
-
-	async function createTask(featureId: string) {
-		const title = window.prompt("任务标题");
-		if (!title) return;
-		await call({ op: "task.create", featureId, title });
-		await refreshTree();
+		setCreate(null);
 	}
 
 	async function startSession(task: Task) {
@@ -178,9 +170,9 @@ export default function App() {
 					tree={tree}
 					connected={connection === "open"}
 					selectedTaskId={selectedTask?.id ?? null}
-					onCreateProject={createProject}
-					onCreateFeature={createFeature}
-					onCreateTask={createTask}
+					onCreateProject={() => setCreate({ kind: "project" })}
+					onCreateFeature={(projectId, name) => setCreate({ kind: "feature", parentId: projectId, parentName: name })}
+					onCreateTask={(featureId, name) => setCreate({ kind: "task", parentId: featureId, parentName: name })}
 					onSelectTask={startSession}
 				/>
 
@@ -203,6 +195,7 @@ export default function App() {
 			</div>
 
 			{pending && <ApprovalDialog request={pending} onDecide={(ok) => void replyApproval(pending, ok)} />}
+			{create && <CreateDialog request={create} onCancel={() => setCreate(null)} onSubmit={submitCreate} />}
 		</div>
 	);
 }

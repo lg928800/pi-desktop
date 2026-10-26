@@ -1086,3 +1086,27 @@ input:focus {
 	color: var(--text-2);
 	font-weight: 600;
 }
+
+/* ---------------- 新建表单 ---------------- */
+.create-modal h2 {
+	margin-bottom: 6px;
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	margin: 12px 0;
+	font-size: 12px;
+	color: var(--text-2);
+}
+
+.field input {
+	width: 100%;
+	padding: 7px 10px;
+	font-size: 13px;
+}
+
+.create-modal .modal-actions {
+	margin-top: 16px;
+}

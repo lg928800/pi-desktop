@@ -5,8 +5,8 @@ interface Props {
 	connected: boolean;
 	selectedTaskId: string | null;
 	onCreateProject: () => void;
-	onCreateFeature: (projectId: string) => void;
-	onCreateTask: (featureId: string) => void;
+	onCreateFeature: (projectId: string, projectName: string) => void;
+	onCreateTask: (featureId: string, featureName: string) => void;
 	onSelectTask: (task: Task) => void;
 }
 
@@ -57,7 +57,7 @@ export function Tree({
 							<span className="group-name">{project.name}</span>
 							<button
 								className="ghost-btn"
-								onClick={() => onCreateFeature(project.id)}
+								onClick={() => onCreateFeature(project.id, project.name)}
 								title="新建功能集"
 								disabled={!connected}
 							>
@@ -74,7 +74,7 @@ export function Tree({
 									<span className="feature-name">{feature.name}</span>
 									<button
 										className="ghost-btn"
-										onClick={() => onCreateTask(feature.id)}
+										onClick={() => onCreateTask(feature.id, feature.name)}
 										title="新建任务"
 										disabled={!connected}
 									>

@@ -10,12 +10,32 @@
 - 依赖版本：pi 1.4.0（`@earendil-works/pi-coding-agent`）
 - 需求与设计：`docs/requirements/INDEX.md`
 
-## 怎么跑
+## 怎么打开
+
+**方式一：双击 App（推荐）**
+
+```bash
+open src-tauri/target/release/bundle/macos/pi-desktop.app
+```
+
+也可以直接双击 `src-tauri/target/release/bundle/macos/pi-desktop.app`，或把它拖进「应用程序」。
+这是原生窗口，不是浏览器 —— 界面用 WebView 渲染，Slack / VS Code 也是同样做法。
+
+**方式二：开发模式**
 
 ```bash
 npm install
-npm run dev      # Tauri 开发模式：自动启动 vite + bridge + 原生窗口
+npm run dev      # 自动起 vite + bridge + 原生窗口（改代码热更新）
 ```
+
+**重新打包 App**
+
+```bash
+npm run build:app   # 产物：src-tauri/target/release/bundle/macos/pi-desktop.app
+```
+
+> 打包后的 App 通过 `npx tsx` 启动仓库里的 bridge，所以**仓库目录不能删/移动**。
+> 要能脱离仓库分发，需要把 bridge 编译成单文件随包携带（P4 待做，环境变量 `PI_DESKTOP_BRIDGE_CMD` 已留口子）。
 
 单独调试时：
 
