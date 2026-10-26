@@ -14,3 +14,5 @@ coverage/
 target/
 src-tauri/target/
 spike/sandbox/
+src/ui/dist/
+src-tauri/target/
