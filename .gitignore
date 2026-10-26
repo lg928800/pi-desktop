@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+out/
+coverage/
+.turbo/
+.vite/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+target/
+src-tauri/target/
