@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ApprovalRequest, ClientOp, ModelInfo, Task, TreeSnapshot } from "@pi-desktop/shared";
-import { BridgeClient, resolveEndpoint } from "./lib/bridge-client.ts";
+import { BridgeClient, resolveEndpoint, type BridgeEndpoint } from "./lib/bridge-client.ts";
 import { emptyView, reduceEvent, resolveApproval, type SessionView } from "./lib/session-view.ts";
 import { Tree } from "./components/Tree.tsx";
 import { Chat } from "./components/Chat.tsx";
 import { ProgressPanel } from "./components/ProgressPanel.tsx";
 import { ApprovalDialog } from "./components/ApprovalDialog.tsx";
 import { ConnectBar } from "./components/ConnectBar.tsx";
+import { TitleBar } from "./components/TitleBar.tsx";
+
+const RIGHT_KEY = "pi-desktop.right-panel";
 
 export default function App() {
 	const [tree, setTree] = useState<TreeSnapshot>({ projects: [] });
@@ -15,6 +18,8 @@ export default function App() {
 	const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 	const [connection, setConnection] = useState<"connecting" | "open" | "closed" | "idle">("idle");
 	const [error, setError] = useState<string | null>(null);
+	const [rightOpen, setRightOpen] = useState(() => localStorage.getItem(RIGHT_KEY) !== "closed");
+	const [connecting, setConnecting] = useState(false);
 	const clientRef = useRef<BridgeClient | null>(null);
 	const viewRef = useRef(view);
 	viewRef.current = view;
@@ -28,19 +33,26 @@ export default function App() {
 		[],
 	);
 
-	const connect = (endpoint: ReturnType<typeof resolveEndpoint>) => {
-		if (!endpoint) return;
+	useEffect(() => {
+		localStorage.setItem(RIGHT_KEY, rightOpen ? "open" : "closed");
+	}, [rightOpen]);
+
+	const connect = (endpoint: BridgeEndpoint) => {
 		clientRef.current?.close();
+		setConnecting(true);
 		const client = new BridgeClient(endpoint);
 		clientRef.current = client;
-		client.onStatus = setConnection;
+		client.onStatus = (status) => {
+			setConnection(status);
+			if (status !== "connecting") setConnecting(false);
+		};
 		client.onEvent((event) => {
-			if (event.type === "approval.request") {
-				// 审批必须由人应答；这里只入队，不自动放行（fail-closed）
-				setView((current) => reduceEvent(current, event));
-				return;
-			}
-			setView((current) => reduceEvent(current, event));
+			setView((current) => {
+				// 多会话并存时，广播事件必须按 sessionId 过滤，否则会串台
+				const eventSession = "sessionId" in event ? (event as { sessionId?: string }).sessionId : undefined;
+				if (eventSession && current.sessionId && eventSession !== current.sessionId) return current;
+				return reduceEvent(current, event);
+			});
 		});
 		client.connect();
 	};
@@ -49,13 +61,11 @@ export default function App() {
 		const endpoint = resolveEndpoint();
 		if (endpoint) connect(endpoint);
 
-		// Tauri 启动 bridge 后会把 {url, token} 注入到 window 上并派发这个事件
 		const onReady = () => {
 			const injected = resolveEndpoint();
 			if (injected) connect(injected);
 		};
 		window.addEventListener("pi-desktop-ready", onReady);
-
 		return () => {
 			window.removeEventListener("pi-desktop-ready", onReady);
 			clientRef.current?.close();
@@ -103,9 +113,24 @@ export default function App() {
 		setSelectedTask(task);
 		setView(emptyView);
 		try {
-			const result = await call<{ sessionId: string; models: ModelInfo[] }>({ op: "session.start", taskId: task.id });
+			const result = await call<{
+				sessionId: string;
+				models: ModelInfo[];
+				history?: Array<{ role: "user" | "assistant"; text: string }>;
+			}>({ op: "session.start", taskId: task.id });
 			setModels(result.models);
-			setView((current) => ({ ...current, sessionId: result.sessionId }));
+			setView((current) => ({
+				...current,
+				sessionId: result.sessionId,
+				items: (result.history ?? []).map((message, index) => ({
+					kind: "message" as const,
+					id: `h${index}`,
+					role: message.role,
+					text: message.text,
+					images: [],
+					streaming: false,
+				})),
+			}));
 		} catch (e) {
 			setError((e as Error).message);
 		}
@@ -140,27 +165,43 @@ export default function App() {
 	const pending = view.approvals[0];
 
 	return (
-		<div className="app">
-			<Tree
-				tree={tree}
-				selectedTaskId={selectedTask?.id ?? null}
-				onCreateProject={createProject}
-				onCreateFeature={createFeature}
-				onCreateTask={createTask}
-				onSelectTask={startSession}
+		<div className={`app ${rightOpen ? "" : "collapsed-right"}`}>
+			<TitleBar
+				taskTitle={selectedTask?.title ?? null}
+				status={view.status}
+				rightOpen={rightOpen}
+				onToggleRight={() => setRightOpen((open) => !open)}
 			/>
 
-			<main className="center">
-				{connection !== "open" && <ConnectBar connection={connection} onConnect={connect} />}
-				{error && (
-					<div className="error" onClick={() => setError(null)}>
-						{error}
-					</div>
-				)}
-				<Chat view={view} onSend={send} onAbort={abort} />
-			</main>
+			<div className="body">
+				<Tree
+					tree={tree}
+					connected={connection === "open"}
+					selectedTaskId={selectedTask?.id ?? null}
+					onCreateProject={createProject}
+					onCreateFeature={createFeature}
+					onCreateTask={createTask}
+					onSelectTask={startSession}
+				/>
 
-			<ProgressPanel view={view} task={selectedTask} models={models} />
+				<main className="center">
+					{connection !== "open" && (
+						<ConnectBar connecting={connecting} connection={connection} onConnect={connect} />
+					)}
+
+					{error && (
+						<button className="error" onClick={() => setError(null)}>
+							{error}
+							<span className="dismiss">点击关闭</span>
+						</button>
+					)}
+
+					<Chat view={view} task={selectedTask} onSend={send} onAbort={abort} />
+				</main>
+
+				{rightOpen && <ProgressPanel view={view} task={selectedTask} models={models} />}
+			</div>
+
 			{pending && <ApprovalDialog request={pending} onDecide={(ok) => void replyApproval(pending, ok)} />}
 		</div>
 	);

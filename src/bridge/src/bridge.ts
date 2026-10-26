@@ -92,6 +92,18 @@ export class Bridge {
 			}
 
 			case "session.start": {
+				// 同一任务已有活会话就复用，避免重复点击开出一堆子进程
+				const existing = this.deps.sessions.list().find((item) => item.taskId === op.taskId);
+				if (existing) {
+					this.deps.sessions.announce(existing.sessionId);
+					return {
+						sessionId: existing.sessionId,
+						models: this.deps.sessions.models(existing.sessionId),
+						history: await this.deps.sessions.history(existing.sessionId),
+						reused: true,
+					};
+				}
+
 				const state = await this.deps.state.load();
 				const task = state.tasks.find((t) => t.id === op.taskId);
 				if (!task) throw new Error(`no such task: ${op.taskId}`);
@@ -113,7 +125,7 @@ export class Bridge {
 					if (t && t.status === "draft") t.status = "executing";
 				});
 				this.deps.emit({ type: "state.changed" });
-				return { sessionId, models: result.models };
+				return { sessionId, models: result.models, history: [] };
 			}
 
 			case "session.list": {

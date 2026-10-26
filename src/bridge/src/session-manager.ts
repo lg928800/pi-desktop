@@ -24,6 +24,17 @@ interface LiveSession {
 	models: ModelInfo[];
 }
 
+function extractMessageText(content: unknown): string {
+	if (typeof content === "string") return content;
+	if (!Array.isArray(content)) return "";
+	return content
+		.map((block) => {
+			const value = block as { type?: string; text?: string };
+			return value?.type === "text" && typeof value.text === "string" ? value.text : "";
+		})
+		.join("");
+}
+
 export type RpcFactory = (init: RpcSessionInit) => RpcSession;
 
 export class SessionManager {
@@ -62,13 +73,19 @@ export class SessionManager {
 		});
 		rpc.start();
 
-		const session: LiveSession = { sessionId: options.sessionId, taskId: options.taskId, cwd: options.cwd, rpc, normalizer, models: [] };
-		this.live.set(options.sessionId, session);
 		this.emit({ type: "session.status", sessionId: options.sessionId, status: "starting" });
 
 		const state = (await rpc.request("get_state").catch(() => undefined)) as
 			| { model?: ModelInfo; cwd?: string }
 			| undefined;
+
+		if (!state) {
+			await rpc.stop(500).catch(() => {});
+			throw new Error(`pi 启动失败（${rpc.status}）：${rpc.stderrTail.slice(-400) || "无输出"}`);
+		}
+
+		const session: LiveSession = { sessionId: options.sessionId, taskId: options.taskId, cwd: options.cwd, rpc, normalizer, models: [] };
+		this.live.set(options.sessionId, session);
 
 		try {
 			const catalog = (await rpc.request("get_available_models")) as { models?: ModelInfo[] } | undefined;
@@ -107,6 +124,32 @@ export class SessionManager {
 		if (!sessionId) throw new Error(`unknown approval request: ${requestId}`);
 		this.approvalOwner.delete(requestId);
 		this.require(sessionId).rpc.notify({ type: "extension_ui_response", id: requestId, confirmed });
+	}
+
+	/** 回放历史消息（文本部分），让重新接入的客户端能看到上下文 */
+	async history(sessionId: string): Promise<Array<{ role: "user" | "assistant"; text: string }>> {
+		const session = this.live.get(sessionId);
+		if (!session) return [];
+		const data = (await session.rpc.request("get_messages").catch(() => undefined)) as
+			| { messages?: Array<{ role?: string; content?: unknown }> }
+			| undefined;
+
+		const out: Array<{ role: "user" | "assistant"; text: string }> = [];
+		for (const message of data?.messages ?? []) {
+			if (message.role !== "user" && message.role !== "assistant") continue;
+			const text = extractMessageText(message.content);
+			if (text.trim()) out.push({ role: message.role, text });
+		}
+		return out;
+	}
+
+	/** 复用已有会话时，把 header/状态补发给新接入的客户端 */
+	announce(sessionId: string): void {
+		const session = this.live.get(sessionId);
+		if (!session) return;
+		const model = this.models(sessionId)[0] ?? null;
+		this.emit({ type: "session.header", sessionId, cwd: session.cwd, model });
+		this.emit({ type: "session.status", sessionId, status: "idle" });
 	}
 
 	asset(sessionId: string, ref: string): { data: string; mimeType: string } | undefined {

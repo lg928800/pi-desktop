@@ -34,6 +34,7 @@ export function reduceEvent(view: SessionView, event: ServerEvent): SessionView 
 			return { ...view, status: event.status };
 
 		case "message.delta": {
+			if (!event.text) return view;
 			const items = [...view.items];
 			const index = items.findIndex((item) => item.kind === "message" && item.id === event.messageId);
 			if (index === -1) {
@@ -53,6 +54,13 @@ export function reduceEvent(view: SessionView, event: ServerEvent): SessionView 
 		}
 
 		case "message.final": {
+			// 只有工具调用的助手消息（没有文本也没有图片）不占时间线
+			if (!event.text.trim() && event.images.length === 0) {
+				return {
+					...view,
+					items: view.items.filter((item) => !(item.kind === "message" && item.id === event.messageId)),
+				};
+			}
 			const items = [...view.items];
 			const index = items.findIndex((item) => item.kind === "message" && item.id === event.messageId);
 			const next: TimelineItem = {

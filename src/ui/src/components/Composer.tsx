@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 interface Props {
 	disabled: boolean;
@@ -19,6 +19,7 @@ export function Composer({ disabled, running, onSend, onAbort }: Props) {
 	const [text, setText] = useState("");
 	const [attachments, setAttachments] = useState<Attachment[]>([]);
 	const [error, setError] = useState<string | null>(null);
+	const textarea = useRef<HTMLTextAreaElement>(null);
 
 	async function addFiles(files: FileList | File[]) {
 		const next: Attachment[] = [];
@@ -38,6 +39,7 @@ export function Composer({ disabled, running, onSend, onAbort }: Props) {
 		if (!trimmed && attachments.length === 0) return;
 		setText("");
 		setError(null);
+		if (textarea.current) textarea.current.style.height = "auto";
 		const images = attachments.map((a) => ({ type: "image" as const, data: a.data, mimeType: a.mimeType }));
 		setAttachments([]);
 		await onSend(trimmed, images);
@@ -58,37 +60,51 @@ export function Composer({ disabled, running, onSend, onAbort }: Props) {
 			{attachments.length > 0 && (
 				<div className="attachments">
 					{attachments.map((a, i) => (
-						<span key={`${a.name}-${i}`} className="img-chip">
+						<span key={`${a.name}-${i}`} className="chip">
 							🖼 {a.name}
 							<button onClick={() => setAttachments((c) => c.filter((_, j) => j !== i))}>×</button>
 						</span>
 					))}
 				</div>
 			)}
-			{error && <div className="error">{error}</div>}
 
-			<div className="composer-row">
+			<div className={`composer-box ${disabled ? "disabled" : ""}`}>
 				<textarea
+					ref={textarea}
+					rows={1}
 					value={text}
 					disabled={disabled}
-					placeholder={disabled ? "先选任务并开会话" : "输入指令…（Enter 发送 / Shift+Enter 换行 / 可粘贴图片）"}
+					placeholder={disabled ? "先选任务并开会话" : "输入指令，可粘贴图片…"}
 					onChange={(event) => setText(event.target.value)}
+					onInput={(event) => {
+						const el = event.currentTarget;
+						el.style.height = "auto";
+						el.style.height = `${Math.min(el.scrollHeight, 180)}px`;
+					}}
 					onKeyDown={(event) => {
-						if (event.key === "Enter" && !event.shiftKey) {
+						if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
 							event.preventDefault();
 							void submit();
 						}
 					}}
 				/>
-				{running ? (
-					<button className="danger" onClick={() => void onAbort()}>
-						中断
-					</button>
-				) : (
-					<button onClick={() => void submit()} disabled={disabled}>
-						发送
-					</button>
-				)}
+
+				<div className="composer-foot">
+					<span className="hint-text">
+						{error ? <span className="bad-text">{error}</span> : "Enter 发送 · Shift+Enter 换行 · 支持粘贴图片"}
+					</span>
+					{running ? (
+						<button className="ghost-btn danger" onClick={() => void onAbort()}>
+							中断
+						</button>
+					) : (
+						<button className="send-btn" onClick={() => void submit()} disabled={disabled} title="发送">
+							<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6">
+								<path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" />
+							</svg>
+						</button>
+					)}
+				</div>
 			</div>
 		</div>
 	);
