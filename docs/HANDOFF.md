@@ -2,10 +2,13 @@
 
 ## 当前任务
 
-pi-desktop 进入**设计评审**：三栏形态（层级树 / 对话 / 进度与落地）与四档权限模型已按用户描述落成 `requirement.md`，待评审后写实施计划。
+P0 已通过、设计已定稿（`design.md` + `tasks.md`），进入 **P1 实施**。下一步从 T1（workspaces 骨架）开始。
 
 ## 已完成
 
+- 2026-10-26：**P0 全绿**（`spike/P0-RESULTS.md`）：字节切帧（含 U+2028）、流式→权威消息→`agent_settled`、`images` 多模态、扩展 `tool_call` 审批链路、`get_state`/模型能力。总耗时 24s。
+- 2026-10-26：决策补全 —— 用途=个人开发者日常 agent；层级定四级、时间盒降级为标签；默认权限 L2；三端兼容；多模态支持。
+- 2026-10-26：`design.md`（模块边界/WS 协议/元数据/对账/权限映射/多模态管线）、`tasks.md`（T1–T11）。
 - 2026-10-26：读取 pi 1.4.0 文档（sdk / rpc / rpc-commands / json / rpc-extension-ui / cli-integration / security），确认可视化桌面的可行路径。
 - 2026-10-26：结论——**不改 pi 源码**，用 `pi --mode rpc` + 本地 Bridge + Web UI；RPC 命令面覆盖会话/模型/思考档位/压缩/分叉/树/审批对话框。
 - 2026-10-26：仓库骨架（AGENTS.md、docs/requirements、LESSONS、memory）建立。
@@ -14,9 +17,9 @@ pi-desktop 进入**设计评审**：三栏形态（层级树 / 对话 / 进度�
 
 ## 下一步
 
-1. 用户评审 `requirement.md`，确认剩余 3 项待拍板：首个真实用途、层级是否只要四级（要不要时间盒维度）、默认权限档位是否 L1。
-2. 评审通过后：写 `design.md`（模块边界 + WS 协议 + 元数据格式），再写逐任务实施计划（`tasks.md`）。
-3. 执行 P0 可行性验证（跑通 RPC + 扩展 `tool_call` 弹 confirm 并由脚本应答）。
+1. T1–T6：bridge 骨架（帧解析 / 会话包装 / 状态存储 / WS），全部用假 pi 子进程测试，不烧 token。
+2. T7–T9：ui 三栏骨架 + 对话流 + 输入区（含图片）。
+3. T10 前需用户确认安装 Rust 工具链（全局安装，需请示）；T11 真实端到端。
 
 ## 注意事项
 

@@ -4,7 +4,7 @@
 
 ## 状态
 
-**设计阶段** — 骨架已建，技术方案待拍板，尚无代码。
+**开发中（P1）** — 设计定稿，P0 可行性已验证通过，正在搭 bridge/ui。
 
 - 架构方向：**不改 pi 源码**，以 `pi --mode rpc` 子进程当引擎，本地 Bridge + Web UI 在其上做可视化。
 - 依赖版本：pi 1.4.0（`@earendil-works/pi-coding-agent`）

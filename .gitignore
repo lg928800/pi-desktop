@@ -13,3 +13,4 @@ coverage/
 *.tsbuildinfo
 target/
 src-tauri/target/
+spike/sandbox/

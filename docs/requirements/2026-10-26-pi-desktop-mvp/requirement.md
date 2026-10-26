@@ -174,6 +174,38 @@ pi 是终端 agent，三个体验瓶颈：
 | 2 | 外壳：Tauri 2，从一开始就上 | **已定** |
 | 3 | 核心心智：会话中心 + 左侧层级树 + 右侧进度/落地面板 | **已定** |
 | 4 | 项目位置：独立仓库 `~/onlyProject/pi-desktop` | **已定** |
-| 5 | 首个真实用途（决定 P1 范围） | **待确认** |
-| 6 | 层级是否只要四级？是否要"里程碑/迭代"这种时间盒维度 | **待确认** |
-| 7 | 默认权限档位：L1（危险操作审批）是否合适 | **待确认** |
+| 5 | 首个真实用途：个人开发者自己日常好用的 agent，不做垂直场景 | **已定** |
+| 6 | 层级定四级（项目/功能集/任务/会话）；时间盒不做层级，降级为任务上的 `milestone` 标签 | **已定** |
+| 7 | 默认权限档位 L2：过程放开、破坏性操作与落地前仍需审批 | **已定** |
+| 8 | 三端兼容 macOS / Windows / Linux | **已定** |
+| 9 | 多模态：模型配置需声明图片能力，输入支持粘贴/拖拽/选文件 | **已定** |
+
+## 12. 跨平台（macOS / Windows / Linux）
+
+Tauri 2 三端可用，但**每个系统用的 webview 不同**：macOS WKWebView、Windows WebView2、Linux WebKitGTK。这决定了三条纪律：
+
+1. **只用标准 Web API**，不依赖 Chromium 私有特性；复杂 CSS（backdrop-filter、高级滚动）先在 WebKit 验证——macOS 本身就是 WebKit，本地先跑 Safari 内核等价于提前发现问题。
+2. **快捷键必须抽象**：`Mod = Cmd(mac) / Ctrl(win+linux)`，禁在代码里写死 `metaKey`；沿用 pi 的动作命名（`app.session.new`）便于两边键位一致。
+3. **平台差异集中到 `platform` 能力层**：
+
+| 差异点 | 处理 |
+| --- | --- |
+| 启动 pi 子进程 | Windows 上 `pi` 实为 `pi.cmd`，需 `shell: true` 或解析真实路径 |
+| 路径分隔符 / 大小写 | 只用 `node:path`，比较路径前规范化；macOS 默认不区分大小写 |
+| git 是否存在 | 启动自检；缺失则禁用「落地」并明示，不静默失败 |
+| 终端渲染 | ANSI 输出用 xterm.js（三端一致），不自绘 |
+| 托盘/菜单 | 各自原生；Linux 部分桌面环境不显示托盘，需有菜单栏兜底 |
+| 打包 | mac 公证、Win 签名、Linux AppImage/deb；自用阶段只做未签名构建 |
+| Linux 依赖 | WebKitGTK 4.1 + libsoup3，在 README 写清安装命令 |
+
+## 13. 多模态
+
+协议层已经够用：`prompt` / `steer` / `follow_up` 都接受 `images: [{type:"image", data: base64, mimeType}]`；`get_available_models` 返回每个模型的 `input: ["text","image"]`。
+
+设计要点：
+
+1. **能力门禁**：选模型时读 `input` 字段，不支持图片的模型禁用附件按钮并说明原因；切换模型时若历史里有图片而新模型不支持，提示而非静默丢图。
+2. **三条入口**：粘贴（剪贴板）、拖拽、文件选择。
+3. **体积控制**：base64 走 WebSocket 会放大 33%。bridge 侧限制单图原始 ≤ 8MB、单条消息 ≤ 4 张，超出先降采样再送；pi 自身也有 `images.resize` 缓存安全档位。
+4. **渲染**：会话里的 `ImageContent` 显示缩略图，点击看原图；不要把 base64 塞进 DOM 属性反复重绘。
+5. **副作用提醒**：图片以 base64 写入会话 jsonl，会显著撑大会话文件（普通文本会话最大实测 9.3MB）。需在设置里提供「会话保留策略」，并在会话体积超阈时提示。
