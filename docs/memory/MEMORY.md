@@ -15,10 +15,15 @@
 - 2026-10-26 | P1 已跑通：Tauri 窗口 + bridge（WS 127.0.0.1 + token）+ UI 三栏；`npm run e2e` 用真 pi 通过
 - 2026-10-26 | 权限网关（L0–L3）尚未实现，现在是裸工具执行；落地/对账在 P2/P3
 
+- 2026-10-26 | 交付形态：mac `.app`（Tauri release，5.95MB），双击即用；但 bridge 仍跑仓库里的源码，仓库不能挪
+- 2026-10-26 | 模型：右栏可点击切换（set_model），「＋ 配置」写 ~/.pi/agent/models.json（JSONC 保注释 + 备份），改完需重启会话
+- 2026-10-26 | 对话呈现：执行过程走终端流（默认运行中展开、结束折叠），最后一条助手消息单独标注「结果」
+
 ## reference
 
 - pi 安装目录：`/Users/Zhuanz/.pi/agent/install/releases/1.4.0/node_modules/@earendil-works/pi-coding-agent`（升级后版本号会变）
 - pi RPC 示例代码：同目录 `examples/rpc-client.ts`、`examples/rpc-extension-ui.ts`
 - pi HTML 导出模板（可复用渲染参考）：`dist/core/export-html/`
+- 仓库提交身份：lvgeng / lvgeng@filez.com（公司邮箱，推公开仓库前建议换 PERSONAL 邮箱）
 - pi 官方扩展示例（逻辑可复用，渲染需重写）：`examples/extensions/permission-gate.ts`、`plan-mode/`、`todo.ts`、`protected-paths.ts`、`git-checkpoint.ts`
 - pi 状态钩子：`pi.on("tool_call")` 返回 `{ block: true, reason }` 可拦截工具；`ctx.ui.confirm` 在 RPC 模式转成 `extension_ui_request`

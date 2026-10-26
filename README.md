@@ -15,6 +15,8 @@
 **方式一：双击 App（推荐）**
 
 新建项目时点「选择…」会弹 macOS 原生目录选择器（Tauri dialog 插件）。
+右栏「可用模型」可点击切换，「＋ 配置」可新增 provider/模型（写入 `~/.pi/agent/models.json`，自动备份）。
+对话区把「执行过程」收进终端流，结论单独展示为「结果」。
 
 ```bash
 open src-tauri/target/release/bundle/macos/pi-desktop.app

@@ -2,6 +2,6 @@
 
 | 需求 | 模块 | 状态 | 目录 | 开始日期 |
 | ---- | ---- | ---- | ---- | -------- |
-| pi-desktop MVP（pi 可视化桌面端） | ui / bridge / ext-* | 开发中（P1） | docs/requirements/2026-10-26-pi-desktop-mvp | 2026-10-26 |
+| pi-desktop MVP（pi 可视化桌面端） | ui / bridge / ext-* | P1 完成，P3 待开工 | docs/requirements/2026-10-26-pi-desktop-mvp | 2026-10-26 |
 
 状态取值：设计待拍板 / 计划中 / 开发中 / 待验收 / 已完成 / 已放弃

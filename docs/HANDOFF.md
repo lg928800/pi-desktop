@@ -2,7 +2,7 @@
 
 ## 当前任务
 
-P1 完成度较高：三栏 UI 已按产品视角重做（自绘标题栏、Markdown 渲染、右栏可折叠、历史回放），端到端与视觉均用 Playwright 实测过。下一步做 P3 权限网关（安全优先于加功能）。
+**P1 收尾完成**，进入 P3（权限网关）。已交付可双击运行的 mac .app，UI/模型/过程展示均用真实模型 + Playwright 截图验收。
 
 ## 已完成
 
@@ -12,6 +12,10 @@ P1 完成度较高：三栏 UI 已按产品视角重做（自绘标题栏、Mark
 - 2026-10-26：T10 Tauri 2 壳：自动拉起 bridge、把 url/token 注入页面；`cargo build` 通过，`tauri dev` 窗口正常。
 - 2026-10-26：真实端到端 `npm run e2e` PASS（真 pi、真模型，流式与权威消息一致）。
 - 2026-10-26：UI 重做（Playwright 实测截图验收）：自绘标题栏（mac 红黄绿让位 84px、可拖拽）、右栏可折叠、Markdown 渲染（代码块/表格/列表）、空消息过滤、滚动跟随、历史回放、同任务会话复用。
+- 2026-10-26：可双击的 mac `.app`（5.95 MB）：Finder 启动补 PATH、随包图标、`PI_DESKTOP_ROOT`/`PI_DESKTOP_BRIDGE_CMD` 留跨平台口子。
+- 2026-10-26：原生目录选择器（tauri-plugin-dialog + capabilities）。
+- 2026-10-26：模型可点击切换（`set_model`）+ 可视化配置新模型（JSONC 保注释写 models.json，自动备份，5 个测试）。
+- 2026-10-26：对话区「执行过程（终端流）/ 结果」分离，运行中展开、结束后自动折叠。
 - 2026-10-26：**P0 全绿**（`spike/P0-RESULTS.md`）：字节切帧（含 U+2028）、流式→权威消息→`agent_settled`、`images` 多模态、扩展 `tool_call` 审批链路、`get_state`/模型能力。总耗时 24s。
 - 2026-10-26：决策补全 —— 用途=个人开发者日常 agent；层级定四级、时间盒降级为标签；默认权限 L2；三端兼容；多模态支持。
 - 2026-10-26：`design.md`（模块边界/WS 协议/元数据/对账/权限映射/多模态管线）、`tasks.md`（T1–T11）。
@@ -23,9 +27,10 @@ P1 完成度较高：三栏 UI 已按产品视角重做（自绘标题栏、Mark
 
 ## 下一步
 
-1. P3 权限网关：`extensions/permission`，`tool_call` 钩子 + 四档策略 + 受保护路径 + fail-closed。
-2. P2 对账与落地：git diff、三轨对账、commit 落地区。
-3. 未做：多会话并行 UI（会话池已支持）、模型切换 UI、打包（release 版 bridge 需随包分发）。
+1. **P3 权限网关**：`extensions/permission`，`tool_call` 钩子 + 四档策略 + 受保护路径 + fail-closed。当前是裸执行，别在真仓库里放危险指令。
+2. **会话持久化**：`sessionFile` 仍为 null，bridge 重启后点任务会新开会话（历史只在活会话里回放）。
+3. **P2 对账与落地**：git diff、三轨对账、commit 落地区。
+4. 打包：release 版仍在跑仓库里的 bridge（`npx tsx`），跨机分发需 `PI_DESKTOP_BRIDGE_CMD` + 随包二进制。
 
 ## 注意事项
 
