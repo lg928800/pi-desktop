@@ -12,6 +12,9 @@
 - 2026-10-26 | 用途 = 个人开发者日常 agent（非垂直场景）；层级定四级，时间盒降级为 task.milestone 标签；默认权限 L2（破坏性动作+落地前仍审批）
 - 2026-10-26 | P0 已验证：RPC 字节切帧 / 流式 / images 多模态 / tool_call 审批链路 全通过（spike/P0-RESULTS.md）
 
+- 2026-10-26 | P1 已跑通：Tauri 窗口 + bridge（WS 127.0.0.1 + token）+ UI 三栏；`npm run e2e` 用真 pi 通过
+- 2026-10-26 | 权限网关（L0–L3）尚未实现，现在是裸工具执行；落地/对账在 P2/P3
+
 ## reference
 
 - pi 安装目录：`/Users/Zhuanz/.pi/agent/install/releases/1.4.0/node_modules/@earendil-works/pi-coding-agent`（升级后版本号会变）

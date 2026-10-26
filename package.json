@@ -16,7 +16,8 @@
 		"bridge:dev": "npm run -w @pi-desktop/bridge dev",
 		"tauri": "tauri",
 		"dev": "tauri dev",
-		"build:app": "tauri build"
+		"build:app": "tauri build",
+		"e2e": "node scripts/e2e-smoke.mjs"
 	},
 	"devDependencies": {
 		"@tauri-apps/cli": "^2.12.4",
