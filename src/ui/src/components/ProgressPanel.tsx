@@ -5,6 +5,8 @@ interface Props {
 	view: SessionView;
 	task: Task | null;
 	models: ModelInfo[];
+	onSelectModel: (model: ModelInfo) => void;
+	onAddModel: () => void;
 }
 
 const PHASE: Record<string, { text: string; tone: string }> = {
@@ -15,7 +17,7 @@ const PHASE: Record<string, { text: string; tone: string }> = {
 	exited: { text: "已退出", tone: "muted" },
 };
 
-export function ProgressPanel({ view, task, models }: Props) {
+export function ProgressPanel({ view, task, models, onSelectModel, onAddModel }: Props) {
 	const tools = view.items.filter((item) => item.kind === "tool");
 	const running = tools.filter((item) => item.status === "running").length;
 	const failed = tools.filter((item) => item.status === "error").length;
@@ -35,7 +37,7 @@ export function ProgressPanel({ view, task, models }: Props) {
 					<h4>任务</h4>
 					<div className="kv">
 						<span>标题</span>
-						<b>{task?.title ?? "—"}</b>
+						<b className="ellipsis">{task?.title ?? "—"}</b>
 					</div>
 					<div className="kv">
 						<span>目录</span>
@@ -46,7 +48,7 @@ export function ProgressPanel({ view, task, models }: Props) {
 					<div className="kv">
 						<span>模型</span>
 						<b className="ellipsis">
-							{model ? `${model.provider}/${model.id}` : "—"}
+							{model ? model.id : "—"}
 							{model && <em className={`tag ${imageCapable ? "ok" : ""}`}>{imageCapable ? "图片" : "文本"}</em>}
 						</b>
 					</div>
@@ -86,16 +88,35 @@ export function ProgressPanel({ view, task, models }: Props) {
 				</section>
 
 				<section className="card">
-					<h4>可用模型</h4>
+					<div className="card-head">
+						<h4>可用模型</h4>
+						<button className="ghost-btn" onClick={onAddModel} title="配置新模型">
+							＋ 配置
+						</button>
+					</div>
+
 					{models.length === 0 ? (
 						<p className="dim">开会话后加载</p>
 					) : (
-						<ul className="list mono small">
-							{models.slice(0, 10).map((m) => (
-								<li key={`${m.provider}/${m.id}`} className={m.input.includes("image") ? "ok-text" : ""}>
-									{m.id}
-								</li>
-							))}
+						<ul className="model-list">
+							{models.map((item) => {
+								const active = model?.provider === item.provider && model?.id === item.id;
+								const disabled = !view.sessionId;
+								return (
+									<li key={`${item.provider}/${item.id}`}>
+										<button
+											className={`model-row ${active ? "active" : ""}`}
+											disabled={disabled}
+											onClick={() => onSelectModel(item)}
+											title={disabled ? "先开会话" : `切换到 ${item.provider}/${item.id}`}
+										>
+											<span className="model-dot">{active ? "●" : "○"}</span>
+											<span className="model-id mono ellipsis">{item.id}</span>
+											{item.input?.includes("image") && <span className="tag ok">图片</span>}
+										</button>
+									</li>
+								);
+							})}
 						</ul>
 					)}
 				</section>

@@ -2,7 +2,10 @@
  * op 路由（design.md §3）：把 WS 请求翻译成状态变更 / 会话动作。
  * 不含传输细节，便于单测。
  */
+import { homedir } from "node:os";
+import { join } from "node:path";
 import type { ClientOp, Project, ServerEvent, Task, TreeSnapshot } from "@pi-desktop/shared";
+import { addModelToConfig } from "./model-config.ts";
 import type { SessionManager } from "./session-manager.ts";
 import type { StateStore } from "./state-store.ts";
 
@@ -103,29 +106,15 @@ export class Bridge {
 						reused: true,
 					};
 				}
+				return this.startSessionForTask(op.taskId, op.model);
+			}
 
-				const state = await this.deps.state.load();
-				const task = state.tasks.find((t) => t.id === op.taskId);
-				if (!task) throw new Error(`no such task: ${op.taskId}`);
-				const feature = state.features.find((f) => f.id === task.featureId);
-				const project = state.projects.find((p) => p.id === feature?.projectId);
-				if (!project) throw new Error(`task ${task.id} has no project`);
-
-				const sessionId = this.deps.newId("s");
-				const result = await this.deps.sessions.start({
-					sessionId,
-					taskId: task.id,
-					cwd: project.root,
-					model: op.model ?? project.defaults.model,
-				});
-
-				await this.deps.state.update((s) => {
-					s.sessions.push({ id: sessionId, taskId: task.id, label: `会话 ${s.sessions.length + 1}`, sessionFile: null, status: "idle" });
-					const t = s.tasks.find((x) => x.id === task.id);
-					if (t && t.status === "draft") t.status = "executing";
-				});
-				this.deps.emit({ type: "state.changed" });
-				return { sessionId, models: result.models, history: [] };
+			case "session.restart": {
+				// 模型配置写进 models.json 后，pi 只有重启进程才会重新读取
+				const live = this.deps.sessions.list().find((item) => item.sessionId === op.sessionId);
+				if (!live) throw new Error(`no such session: ${op.sessionId}`);
+				await this.deps.sessions.stop(op.sessionId);
+				return this.startSessionForTask(live.taskId);
 			}
 
 			case "session.list": {
@@ -148,6 +137,23 @@ export class Bridge {
 			case "model.list":
 				return this.deps.sessions.models(op.sessionId);
 
+			case "model.set":
+				return this.deps.sessions.setModel(op.sessionId, op.provider, op.modelId);
+
+			case "model.add": {
+				const path = process.env.PI_DESKTOP_MODELS ?? join(homedir(), ".pi", "agent", "models.json");
+				const result = await addModelToConfig(path, {
+					provider: op.provider,
+					baseUrl: op.baseUrl,
+					api: op.api,
+					modelId: op.modelId,
+					name: op.name,
+					apiKey: op.apiKey,
+					image: op.image,
+				});
+				return { ...result, path, restartRequired: true };
+			}
+
 			case "asset.get": {
 				const asset = this.deps.sessions.asset(op.sessionId, op.ref);
 				if (!asset) throw new Error(`no such asset: ${op.ref}`);
@@ -159,5 +165,36 @@ export class Bridge {
 				throw new Error(`unknown op: ${unknown.op}`);
 			}
 		}
+	}
+
+	private async startSessionForTask(taskId: string, model?: string): Promise<unknown> {
+		const state = await this.deps.state.load();
+		const task = state.tasks.find((t) => t.id === taskId);
+		if (!task) throw new Error(`no such task: ${taskId}`);
+		const feature = state.features.find((f) => f.id === task.featureId);
+		const project = state.projects.find((p) => p.id === feature?.projectId);
+		if (!project) throw new Error(`task ${task.id} has no project`);
+
+		const sessionId = this.deps.newId("s");
+		const result = await this.deps.sessions.start({
+			sessionId,
+			taskId: task.id,
+			cwd: project.root,
+			model: model ?? project.defaults.model,
+		});
+
+		await this.deps.state.update((s) => {
+			s.sessions.push({
+				id: sessionId,
+				taskId: task.id,
+				label: `会话 ${s.sessions.length + 1}`,
+				sessionFile: null,
+				status: "idle",
+			});
+			const t = s.tasks.find((x) => x.id === task.id);
+			if (t && t.status === "draft") t.status = "executing";
+		});
+		this.deps.emit({ type: "state.changed" });
+		return { sessionId, models: result.models, history: [] };
 	}
 }

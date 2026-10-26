@@ -126,6 +126,22 @@ export class SessionManager {
 		this.require(sessionId).rpc.notify({ type: "extension_ui_response", id: requestId, confirmed });
 	}
 
+	/** 切模型：pi 会在下一轮请求生效 */
+	async setModel(sessionId: string, provider: string, modelId: string): Promise<ModelInfo | null> {
+		const session = this.require(sessionId);
+		const model = (await session.rpc.request("set_model", { provider, modelId })) as ModelInfo | undefined;
+		this.emit({ type: "session.header", sessionId, cwd: session.cwd, model: model ?? null });
+		return model ?? null;
+	}
+
+	/** 结束某个会话的进程（模型配置变更后需要重启才生效） */
+	async stop(sessionId: string): Promise<void> {
+		const session = this.live.get(sessionId);
+		if (!session) return;
+		this.live.delete(sessionId);
+		await session.rpc.stop(800).catch(() => {});
+	}
+
 	/** 回放历史消息（文本部分），让重新接入的客户端能看到上下文 */
 	async history(sessionId: string): Promise<Array<{ role: "user" | "assistant"; text: string }>> {
 		const session = this.live.get(sessionId);

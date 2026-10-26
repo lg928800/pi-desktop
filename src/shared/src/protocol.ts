@@ -39,6 +39,19 @@ export type ClientOp =
 	| { id: string; op: "run.abort"; sessionId: string }
 	| { id: string; op: "approval.reply"; requestId: string; confirmed: boolean }
 	| { id: string; op: "model.list"; sessionId?: string }
+	| { id: string; op: "model.set"; sessionId: string; provider: string; modelId: string }
+	| {
+			id: string;
+			op: "model.add";
+			provider: string;
+			baseUrl: string;
+			api: string;
+			modelId: string;
+			name?: string;
+			apiKey?: string;
+			image?: boolean;
+	  }
+	| { id: string; op: "session.restart"; sessionId: string }
 	| { id: string; op: "asset.get"; sessionId: string; ref: string };
 
 /** 应答：成功带 data，失败带 error；id 与请求一致 */

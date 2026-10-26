@@ -8,6 +8,7 @@ import { ProgressPanel } from "./components/ProgressPanel.tsx";
 import { ApprovalDialog } from "./components/ApprovalDialog.tsx";
 import { ConnectBar } from "./components/ConnectBar.tsx";
 import { CreateDialog, type CreateRequest } from "./components/CreateDialog.tsx";
+import { AddModelDialog, type AddModelValues } from "./components/AddModelDialog.tsx";
 import { TitleBar } from "./components/TitleBar.tsx";
 
 const RIGHT_KEY = "pi-desktop.right-panel";
@@ -22,6 +23,7 @@ export default function App() {
 	const [rightOpen, setRightOpen] = useState(() => localStorage.getItem(RIGHT_KEY) !== "closed");
 	const [connecting, setConnecting] = useState(false);
 	const [create, setCreate] = useState<CreateRequest | null>(null);
+	const [addModelOpen, setAddModelOpen] = useState(false);
 	const clientRef = useRef<BridgeClient | null>(null);
 	const viewRef = useRef(view);
 	viewRef.current = view;
@@ -128,6 +130,29 @@ export default function App() {
 		}
 	}
 
+	async function selectModel(model: ModelInfo) {
+		const sessionId = viewRef.current.sessionId;
+		if (!sessionId) return;
+		try {
+			await call({ op: "model.set", sessionId, provider: model.provider, modelId: model.id });
+		} catch (e) {
+			setError(`切换模型失败：${(e as Error).message}`);
+		}
+	}
+
+	async function submitAddModel(values: AddModelValues) {
+		const result = await call<{ path: string; backupPath?: string }>({ op: "model.add", ...values });
+		return result;
+	}
+
+	async function restartSession() {
+		const sessionId = viewRef.current.sessionId;
+		if (!sessionId) return;
+		const result = await call<{ sessionId: string; models: ModelInfo[] }>({ op: "session.restart", sessionId });
+		setModels(result.models);
+		setView((current) => ({ ...current, sessionId: result.sessionId, items: [], approvals: [] }));
+	}
+
 	async function send(message: string, images: Array<{ type: "image"; data: string; mimeType: string }>) {
 		const sessionId = viewRef.current.sessionId;
 		if (!sessionId) {
@@ -191,11 +216,26 @@ export default function App() {
 					<Chat view={view} task={selectedTask} onSend={send} onAbort={abort} />
 				</main>
 
-				{rightOpen && <ProgressPanel view={view} task={selectedTask} models={models} />}
+				{rightOpen && (
+					<ProgressPanel
+						view={view}
+						task={selectedTask}
+						models={models}
+						onSelectModel={(model) => void selectModel(model)}
+						onAddModel={() => setAddModelOpen(true)}
+					/>
+				)}
 			</div>
 
 			{pending && <ApprovalDialog request={pending} onDecide={(ok) => void replyApproval(pending, ok)} />}
 			{create && <CreateDialog request={create} onCancel={() => setCreate(null)} onSubmit={submitCreate} />}
+			{addModelOpen && (
+				<AddModelDialog
+					onCancel={() => setAddModelOpen(false)}
+					onSubmit={submitAddModel}
+					onRestart={restartSession}
+				/>
+			)}
 		</div>
 	);
 }
