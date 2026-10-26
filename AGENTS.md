@@ -18,14 +18,22 @@
 4. **一次运行的结束信号是 `agent_settled`**，不是 `agent_end`（后者之后还可能跟重试、压缩恢复、排队消息）。
 5. **密钥只留在 pi 的 `auth.json`**。Bridge 与 UI 永不接触明文 key，也不许回显。
 6. **审批默认开启**：危险 bash、写文件必须经 UI 确认并留痕，不设隐藏的自动批准。
+7. **UI 不在场必须 fail-closed**：审批无人应答时阻塞动作，绝不默认放行。
+8. **落地（commit）只能由人触发**，agent 与扩展都无权自动提交。
+9. **右侧面板不许只显示 agent 的自述**：计划（意图）、git（实际）、审批记录三轨必须对账，不一致就标红。
 
 ## 模块注册表
 
 | 模块 | 路径 | 职责 | 依赖 | 测试命令 |
 | ---- | ---- | ---- | ---- | -------- |
-| （待 P0 验证后确定） | TODO(待确认) | TODO(待确认) | TODO(待确认) | TODO(待确认) |
+| ui | `src/ui` | 三栏界面：层级树 / 对话 / 进度与落地 | bridge 的 WS 协议 | TODO(待确认) |
+| bridge | `src/bridge` | 会话池、RPC 帧解析、任务元数据、git 落地、三轨对账 | pi 子进程 | TODO(待确认) |
+| shared | `src/shared` | WS 消息与事件类型（前后端共用） | — | TODO(待确认) |
+| ext-permission | `extensions/permission` | `tool_call` 网关：四档策略、审批、受保护路径 | pi Extension API | TODO(待确认) |
+| ext-plan | `extensions/plan` | 计划步骤与 `[DONE:n]` 完成标记，供右栏消费 | pi Extension API | TODO(待确认) |
+| shell | `src-tauri` | Tauri 壳：窗口、托盘、全局快捷键、通知 | ui 构建产物 | TODO(待确认) |
 
-规划中的分层（尚未落地，命名待拍板）：`ui`（前端）/ `bridge`（Node 后端，管会话池与 RPC）/ `shared`（协议类型）。
+上表是 P0 后的规划分层，路由与命名以 `docs/requirements/2026-10-26-pi-desktop-mvp/requirement.md` 为准。
 
 ## 全局约定
 
