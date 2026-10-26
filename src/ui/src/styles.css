@@ -1110,3 +1110,14 @@ input:focus {
 .create-modal .modal-actions {
 	margin-top: 16px;
 }
+
+.field-row {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.field-row input {
+	flex: 1;
+	min-width: 0;
+}

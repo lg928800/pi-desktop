@@ -31,6 +31,8 @@ export function CreateDialog({ request, onCancel, onSubmit }: Props) {
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const firstInput = useRef<HTMLInputElement>(null);
+	const [picking, setPicking] = useState(false);
+	const canPickFolder = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
 	useEffect(() => {
 		firstInput.current?.focus();
@@ -43,6 +45,24 @@ export function CreateDialog({ request, onCancel, onSubmit }: Props) {
 		window.addEventListener("keydown", onKey);
 		return () => window.removeEventListener("keydown", onKey);
 	}, [onCancel]);
+
+	/** 原生「选择文件夹」（Tauri dialog 插件）；浏览器里没有这条能力 */
+	async function pickFolder() {
+		setPicking(true);
+		setError(null);
+		try {
+			const { open } = await import("@tauri-apps/plugin-dialog");
+			const selected = await open({ directory: true, multiple: false, title: "选择项目根目录" });
+			if (typeof selected === "string" && selected) {
+				setRoot(selected);
+				if (!name.trim()) setName(selected.split("/").filter(Boolean).at(-1) ?? "");
+			}
+		} catch (e) {
+			setError(`无法打开目录选择器：${(e as Error).message}`);
+		} finally {
+			setPicking(false);
+		}
+	}
 
 	async function submit() {
 		const trimmed = name.trim();
@@ -86,14 +106,23 @@ export function CreateDialog({ request, onCancel, onSubmit }: Props) {
 				{request.kind === "project" && (
 					<label className="field">
 						<span>根目录</span>
-						<input
-							value={root}
-							placeholder="/Users/you/onlyProject/my-app"
-							onChange={(event) => setRoot(event.target.value)}
-							onKeyDown={(event) => {
-								if (event.key === "Enter") void submit();
-							}}
-						/>
+						<div className="field-row">
+							<input
+								value={root}
+								placeholder="/Users/you/onlyProject/my-app"
+								onChange={(event) => setRoot(event.target.value)}
+								onKeyDown={(event) => {
+									if (event.key === "Enter") void submit();
+								}}
+							/>
+							{canPickFolder ? (
+								<button type="button" onClick={() => void pickFolder()} disabled={picking}>
+									{picking ? "选择中…" : "选择…"}
+								</button>
+							) : (
+								<span className="dim small">桌面端可点选择目录</span>
+							)}
+						</div>
 					</label>
 				)}
 

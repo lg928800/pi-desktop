@@ -14,6 +14,8 @@
 
 **方式一：双击 App（推荐）**
 
+新建项目时点「选择…」会弹 macOS 原生目录选择器（Tauri dialog 插件）。
+
 ```bash
 open src-tauri/target/release/bundle/macos/pi-desktop.app
 ```
