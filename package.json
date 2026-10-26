@@ -1,0 +1,24 @@
+{
+	"name": "pi-desktop",
+	"private": true,
+	"type": "module",
+	"workspaces": [
+		"src/shared",
+		"src/bridge",
+		"src/ui"
+	],
+	"engines": {
+		"node": ">=22.19"
+	},
+	"scripts": {
+		"typecheck": "tsc --noEmit",
+		"test": "vitest --run",
+		"bridge:dev": "npm run -w @pi-desktop/bridge dev"
+	},
+	"devDependencies": {
+		"@types/node": "^26.6.5",
+		"tsx": "^4.23.15",
+		"typescript": "^7.0.2",
+		"vitest": "^5.0.5"
+	}
+}

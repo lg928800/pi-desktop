@@ -1,0 +1,14 @@
+{
+	"name": "@pi-desktop/bridge",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"main": "./src/main.ts",
+	"scripts": {
+		"dev": "tsx watch src/main.ts",
+		"test": "vitest --run"
+	},
+	"dependencies": {
+		"@pi-desktop/shared": "*"
+	}
+}
